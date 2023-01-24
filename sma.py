@@ -58,9 +58,15 @@ def sMA(df,ticker):
 #Load stock data
 st.title('Simple Moving Average')
 user_input = st.text_input('Enter The Stock Ticker', 'TATAPOWER.NS')
-start = st.date_input('Enter end date',datetime.date(2019,1, 1))
-end = st.date_input('Enter end date',datetime.date(2022,1, 1))
-df = yf.download(user_input, start=start, end=end)
+
+if st.button('Intraday'):
+    df = yf.download(tickers=user_input, period='1d', interval='1m')
+
+else:
+    start = st.date_input('Enter end date',datetime.date(2019,1, 1))
+    end = st.date_input('Enter end date',datetime.date(2022,1, 1))
+    df = yf.download(user_input, start=start, end=end)
+    
 sMA(df,user_input)
 
 
