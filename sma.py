@@ -63,7 +63,7 @@ if st.button('Intraday'):
     df = yf.download(tickers=user_input, period='1d', interval='1m')
 
 else:
-    start = st.date_input('Enter end date',datetime.date(2019,1, 1))
+    start = st.date_input('Enter start date',datetime.date(2019,1, 1))
     end = st.date_input('Enter end date',datetime.date(2022,1, 1))
     df = yf.download(user_input, start=start, end=end)
     
