@@ -31,19 +31,26 @@ def sMA(df,ticker):
     
     
     
-    f = plt.figure()
-    f.set_figwidth(15)
-    f.set_figheight(5)
-    plt.suptitle(f"{ ticker } stock SMA Crossover strategy")
-    plt.plot(df['Adj Close'], label = 'Asset Price', c = 'blue', alpha = 0.5)
-    plt.plot(df['ma_1'], label = f'MA {m1}', c = 'k', alpha = 0.9)
-    plt.plot(df['ma_2'], label = f'MA {m2}', c = 'magenta', alpha = 0.9)
-    plt.scatter(df.iloc[Buy].index, df.iloc[Buy]['Adj Close'], marker = '^', color = 'g', s = 100)
-    plt.scatter(df.iloc[Sell].index, df.iloc[Sell]['Adj Close'], marker = 'v', color = 'r', s = 100)
-    plt.xlabel('Timeframe')
-    plt.ylabel('Adj Close price')
-    plt.legend()
-    st.pyplot(f)
+    fig = make_subplots(rows=1, cols=1)
+    
+    fig.add_trace(go.Scatter(x=df.index, y=df['Adj Close'],name='Adj Close Price'), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df.index, y=df['ma_1'], name=f'MA{m1}'), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df.index, y=df['ma_2'], name=f'MA {m2}'), row=1, col=1)
+    
+    fig.add_trace(go.Scatter(x=df.iloc[Buy].index, 
+                             y=df['Adj Close'], name='Buy Signal', mode='markers',
+                            marker=dict(color='green', size=8, symbol='triangle-up-dot')))
+    
+    fig.add_trace(go.Scatter(x=df.iloc[Sell].index, 
+                             y=df['Adj Close'], name='Sell Signal', mode='markers',
+                            marker=dict(color='red', size=8, symbol='triangle-down-dot')))
+    
+    fig.update_layout(title=f"{ ticker } stock SMA Crossover strategy",
+                  xaxis_title='Timeframe',
+                  yaxis_title='Adj Close Price')
+           
+    st.plotly_chart(fig)
+    
     
     a = ((pd.Series([(sell - buy) / buy for sell, buy in zip(sellprices, buyprices)]) + 1).prod() - 1) * 100
     
