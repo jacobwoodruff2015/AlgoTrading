@@ -39,11 +39,11 @@ def sMA(df,ticker):
     fig.add_trace(go.Scatter(x=df.index, y=df['ma_2'], name=f'MA {m2}'), row=1, col=1)
     
     fig.add_trace(go.Scatter(x=df.iloc[Buy].index, 
-                             y=df['Adj Close'], name='Buy Signal', mode='markers',
+                             y=df.iloc[Buy]['Adj Close'], name='Buy Signal', mode='markers',
                             marker=dict(color='green', size=8, symbol='triangle-up-dot')))
     
     fig.add_trace(go.Scatter(x=df.iloc[Sell].index, 
-                             y=df['Adj Close'], name='Sell Signal', mode='markers',
+                             y=df.iloc[Sell]['Adj Close'], name='Sell Signal', mode='markers',
                             marker=dict(color='red', size=8, symbol='triangle-down-dot')))
     
     fig.update_layout(title=f"{ ticker } stock SMA Crossover strategy",
