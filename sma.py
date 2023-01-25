@@ -5,7 +5,8 @@ import streamlit as st
 import yfinance as yf
 import datetime
 import plotly.express as px
-
+import plotly.graph_objs as go
+from plotly.subplots import make_subplots
 
 def sMA(df,ticker):
     m1 = st.number_input('Enter Moving Average 1:- ',value=50)
@@ -30,7 +31,7 @@ def sMA(df,ticker):
             sellprices.append(df.iloc[i]['Adj Close'])
     
     
-    
+
     fig = make_subplots(rows=1, cols=1)
     
     fig.add_trace(go.Scatter(x=df.index, y=df['Adj Close'],name='Adj Close Price'), row=1, col=1)
@@ -52,6 +53,7 @@ def sMA(df,ticker):
     st.plotly_chart(fig)
     
     
+    
     a = ((pd.Series([(sell - buy) / buy for sell, buy in zip(sellprices, buyprices)]) + 1).prod() - 1) * 100
     
     a = str(round(a,2))
@@ -70,7 +72,7 @@ if st.button('Intraday'):
     df = yf.download(tickers=user_input, period='1d', interval='1m')
 
 else:
-    start = st.date_input('Enter start date',datetime.date(2019,1, 1))
+    start = st.date_input('Enter end date',datetime.date(2019,1, 1))
     end = st.date_input('Enter end date',datetime.date(2022,1, 1))
     df = yf.download(user_input, start=start, end=end)
     
