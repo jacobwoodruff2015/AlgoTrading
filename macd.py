@@ -130,7 +130,7 @@ def MACD(df,ticker):
 
     macd_investment_ret_df = pd.DataFrame(macd_investment_ret).rename(columns = {0:'investment_returns'})
     total_investment_ret = round(sum(macd_investment_ret_df['investment_returns']), 2)
-    profit_percentage = floor((total_investment_ret/investment_value)*100)
+    profit_percentage = round((total_investment_ret-1000)/10,2)
     
     st.markdown('Profit gained from the MACD strategy by investing 1000 Rs in : **_{}_**'.format(total_investment_ret))
     st.markdown('Profit percentage of the MACD strategy : **_{}%_**'.format(profit_percentage))
