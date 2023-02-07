@@ -50,7 +50,7 @@ def sMA(df,ticker):
                   xaxis_title='Timeframe',
                   yaxis_title='Adj Close Price')
            
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,use_container_width=True)
     
     
     
