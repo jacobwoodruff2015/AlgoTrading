@@ -9,142 +9,121 @@ from stockstats import StockDataFrame
 from math import floor
 
 
+
 def MACD(df,ticker):
     stock = StockDataFrame.retype(df)
     df['macd'] = stock['macd']
 
-    def implement_macd_strategy(prices, data):    
-        buy_price = []
-        sell_price = []
-        macd_signal = []
-        signal = 0
+   
+    def MACD_Strategy(df, risk):
+        MACD_Buy=[]
+        MACD_Sell=[]
+        position=False
 
-        for i in range(len(data)):
-            if data['macd'][i] > data['macds'][i]:
-                if signal != 1:
-                    buy_price.append(prices[i])
-                    sell_price.append(np.nan)
-                    signal = 1
-                    macd_signal.append(signal)
+        for i in range(0, len(df)):
+            if df['macd'][i] > df['macds'][i] :
+                MACD_Sell.append(np.nan)
+                if position ==False:
+                    MACD_Buy.append(df['adj close'][i])
+                    position=True
                 else:
-                    buy_price.append(np.nan)
-                    sell_price.append(np.nan)
-                    macd_signal.append(0)
-            elif data['macd'][i] < data['macds'][i]:
-                if signal != -1:
-                    buy_price.append(np.nan)
-                    sell_price.append(prices[i])
-                    signal = -1
-                    macd_signal.append(signal)
+                    MACD_Buy.append(np.nan)
+            elif df['macd'][i] < df['macds'][i] :
+                MACD_Buy.append(np.nan)
+                if position == True:
+                    MACD_Sell.append(df['adj close'][i])
+                    position=False
                 else:
-                    buy_price.append(np.nan)
-                    sell_price.append(np.nan)
-                    macd_signal.append(0)
+                    MACD_Sell.append(np.nan)
+            elif position == True and df['adj close'][i] < MACD_Buy[-1] * (1 - risk):
+                MACD_Sell.append(df["Adj Close"][i])
+                MACD_Buy.append(np.nan)
+                position = False
+            elif position == True and df['adj close'][i] < df['adj close'][i - 1] * (1 - risk):
+                MACD_Sell.append(df["adj close"][i])
+                MACD_Buy.append(np.nan)
+                position = False
             else:
-                buy_price.append(np.nan)
-                sell_price.append(np.nan)
-                macd_signal.append(0)
-                
-        return buy_price, sell_price, macd_signal
-            
-    buy_price, sell_price, macd_signal = implement_macd_strategy(df['close'], stock)
-    
-    
-    position = []
-    for i in range(len(macd_signal)):
-        if macd_signal[i] > 1:
-            position.append(0)
-        else:
-            position.append(1)
-            
-    for i in range(len(df['close'])):
-        if macd_signal[i] == 1:
-            position[i] = 1
-        elif macd_signal[i] == -1:
-            position[i] = 0
-        else:
-            position[i] = position[i-1]
-            
-    macd = df['macd']
-    signal = df['macds']
-    close_price = df['close']
-    macd_signal = pd.DataFrame(macd_signal).rename(columns = {0:'macd_signal'}).set_index(df.index)
-    position = pd.DataFrame(position).rename(columns = {0:'macd_position'}).set_index(df.index)
+                MACD_Buy.append(np.nan)
+                MACD_Sell.append(np.nan)
 
-    frames = [close_price, macd, signal, macd_signal, position]
-    strategy = pd.concat(frames, join = 'inner', axis = 1)
+        df['MACD_Buy_Signal_price'] = MACD_Buy
+        df['MACD_Sell_Signal_price'] = MACD_Sell
     
+    MACD_strategy = MACD_Strategy(df, 0.025)
     
+    def MACD_color(df):
+        MACD_color = []
+        for i in range(0, len(df)):
+            if df['macdh'][i] > df['macdh'][i - 1]:
+                MACD_color.append(True)
+            else:
+                MACD_color.append(False)
+        return MACD_color
+
+    df['positive'] = MACD_color(df)
+
+    def calculate_return(df):
+        returns = []
+        buy_price = None
+        position = False
+        for i in range(len(df)):
+            if not np.isnan(df['MACD_Buy_Signal_price'][i]):
+                buy_price = df['MACD_Buy_Signal_price'][i]
+                position = True
+            elif not np.isnan(df['MACD_Sell_Signal_price'][i]):
+                if position:
+                    returns.append((df['MACD_Sell_Signal_price'][i] - buy_price) / buy_price * 100)
+                    position = False
+        return sum(returns)
+
+    return_percent = calculate_return(df)
+    return_percent = round(return_percent,2)
     
-    
-    
-    fig = make_subplots(rows=2, cols=1)
+    fig = make_subplots(rows=2,cols=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['adj close'],name='Adj Close Price',line=dict(color='skyblue')),row=1, col=1)
-    
-    
-    fig.add_trace(go.Scatter(x=df.index, 
-                             y=buy_price, name='Buy Signal', mode='markers',
-                            marker=dict(color='green', size=8, symbol='triangle-up-dot')))
-    
-    fig.add_trace(go.Scatter(x=df.index, 
-                             y=sell_price, name='Sell Signal', mode='markers',
-                            marker=dict(color='red', size=8, symbol='triangle-down-dot')))
-    
 
+    fig.add_trace(go.Scatter(x=df.index, 
+                                y=df['MACD_Buy_Signal_price'], name='Buy Signal', mode='markers',
+                                marker=dict(color='green', size=8, symbol='triangle-up-dot')))
+        
+    fig.add_trace(go.Scatter(x=df.index, 
+                                y=df['MACD_Sell_Signal_price'], name='Sell Signal', mode='markers',
+                                marker=dict(color='red', size=8, symbol='triangle-down-dot')))
+
+    
+    
+    
     fig.add_trace(go.Scatter(x=df.index, y=df['macds'],name='Signal',line=dict(color='yellow')), row=2, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['macd'],name='MACD',line=dict(color='red')), row=2, col=1)
         
     df["color"] = np.where(df["macdh"]<0, 'red', 'yellow')
 
-    fig.add_trace(go.Bar(x=df.index,y=df['macdh'],marker_color=df['color']), row=2, col=1)
+    fig.add_trace(go.Bar(x=df.index,y=df['macdh'],marker_color=df['color'],showlegend=False), row=2, col=1)
             
     fig.update_layout(title=f"{ticker} MACD strategy",
                         xaxis_title='Timeframe',
                         yaxis_title='Adj Close Price')
 
     st.plotly_chart(fig,use_container_width=True)
-
-
-
-
-    stock_ret = pd.DataFrame(np.diff(df['close'])).rename(columns = {0:'returns'})
     
-    macd_strategy_ret = []
-
-    for i in range(len(stock_ret)):
-        try:
-            returns = stock_ret['returns'][i]*strategy['macd_position'][i]
-            macd_strategy_ret.append(returns)
-        except:
-            pass
-        
-    macd_strategy_ret_df = pd.DataFrame(macd_strategy_ret).rename(columns = {0:'macd_returns'})
-
-    investment_value = 1000
-    number_of_stocks = floor(investment_value/df['close'][0])
-    macd_investment_ret = []
-
-    for i in range(len(macd_strategy_ret_df['macd_returns'])):
-        returns = number_of_stocks*macd_strategy_ret_df['macd_returns'][i]
-        macd_investment_ret.append(returns)
-
-    macd_investment_ret_df = pd.DataFrame(macd_investment_ret).rename(columns = {0:'investment_returns'})
-    total_investment_ret = round(sum(macd_investment_ret_df['investment_returns']), 2)
-    profit_percentage = round((total_investment_ret-1000)/10,2)
+    st.markdown(f'Profit percentage of the MACD strategy : **_{return_percent}%_**')
     
-    st.markdown('Profit gained from the MACD strategy by investing 1000 Rs in : **_{}_**'.format(total_investment_ret))
-    st.markdown('Profit percentage of the MACD strategy : **_{}%_**'.format(profit_percentage))
-
+    
 
 st.title('MACD Crossover strategy')
 user_input = st.text_input('Enter The Stock Ticker', 'TATAPOWER.NS')
 
 if st.button('Intraday'):
-    df = yf.download(tickers=user_input, period='1d', interval='1m')
+    df = yf.download(user_input, period='1d', interval='1m')
+    MACD(df,user_input)
 
+elif st.button('1Y'):
+    df = yf.download(user_input, period='1y', interval='1d')
+    MACD(df,user_input)
+    
 else:
     start = st.date_input('Enter Start date',datetime.date(2019,1, 1))
     end = st.date_input('Enter End date',datetime.date(2023,1, 1))
     df = yf.download(user_input, start=start, end=end)
-    
-MACD(df,user_input)
+    MACD(df,user_input)
