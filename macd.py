@@ -7,7 +7,7 @@ import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 from stockstats import StockDataFrame
 from math import floor
-
+from prettytable import PrettyTable
 
 
 def MACD(df,ticker):
@@ -110,6 +110,25 @@ def MACD(df,ticker):
     st.markdown(f'Profit percentage of the MACD strategy : **_{return_percent}%_**')
     
     
+    myTable1 = PrettyTable(['Buy date','Buy price'])
+    myTable2 = PrettyTable(['Sell date','Sell price'])
+    for i in range(len(df)):
+        if not np.isnan(df['MACD_Buy_Signal_price'][i]):
+            myTable1.add_row([df.index[i].strftime("%Y-%m-%d"), round(df['MACD_Buy_Signal_price'][i],2)])
+        elif not np.isnan(df['MACD_Sell_Signal_price'][i]):
+            myTable2.add_row([df.index[i].strftime("%Y-%m-%d"), round(df['MACD_Sell_Signal_price'][i],2)])
+            
+    col1, col2, col3= st.columns(3,gap="small")
+
+    with col1:
+        st.subheader("Buy")
+        st.write(myTable1)
+
+    with col2:
+        st.subheader("Sell")
+        st.write(myTable2)
+    with col3:
+        pass
 
 st.title('MACD Crossover strategy')
 user_input = st.text_input('Enter The Stock Ticker', 'TATAPOWER.NS')
