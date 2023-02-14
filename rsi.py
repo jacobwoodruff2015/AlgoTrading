@@ -66,13 +66,17 @@ user_input = st.text_input('Enter The Stock Ticker', 'HDFC.NS')
 
 if st.button('Intraday'):
     df = yf.download(tickers=user_input, period='1d', interval='1m')
-
+    bollingerRSI(df,user_input)
+    
+elif st.button('1Y'):
+    df = yf.download(user_input, period='1y', interval='1d')
+    sMA(df,user_input)
+    bollingerRSI(df,user_input)
 else:
     start = st.date_input('Enter end date',datetime.date(2019,1, 1))
     end = st.date_input('Enter end date',datetime.date(2022,1, 1))
     df = yf.download(user_input, start=start, end=end)
-    
-bollingerRSI(df,user_input)
+    bollingerRSI(df,user_input)
 
 
 
