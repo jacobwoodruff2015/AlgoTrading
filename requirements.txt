@@ -8,3 +8,4 @@ stockstats==0.5.1
 streamlit==1.16.0
 ta==0.10.2
 yfinance==0.1.96
+tradingview_ta==3.3.0
