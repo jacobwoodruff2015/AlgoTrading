@@ -1,11 +1,10 @@
 matplotlib==3.6.2
 numpy==1.24.1
 pandas==1.5.2
-pandas_ta==0.3.14b0
 plotly==5.11.0
+prettytable==3.6.0
 scikit_learn==1.2.1
 stockstats==0.5.1
 streamlit==1.16.0
 ta==0.10.2
 yfinance==0.1.96
-prettytable==3.6.0
