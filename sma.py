@@ -17,7 +17,7 @@ def sMA(df,ticker):
     df['ma_2'] = df['Close'].rolling(m2).mean()
 
     df = df.dropna()
-    df = df[['close', 'ma_1', 'ma_2']]
+    df = df[['Close', 'ma_1', 'ma_2']]
     Buy = []
     Sell = []
     buyprices = []
@@ -27,11 +27,11 @@ def sMA(df,ticker):
         if df.ma_1.iloc[i] > df.ma_2.iloc[i] \
         and df.ma_1.iloc[i-1] < df.ma_2.iloc[i-1]:
             Buy.append(i)
-            buyprices.append(df.iloc[i]['close'])
+            buyprices.append(df.iloc[i]['Close'])
         elif df.ma_1.iloc[i] < df.ma_2.iloc[i] \
         and df.ma_1.iloc[i-1] > df.ma_2.iloc[i-1]:
             Sell.append(i)
-            sellprices.append(df.iloc[i]['close'])
+            sellprices.append(df.iloc[i]['Close'])
     
     if Buy[0] > Sell[0]:
         Sell.pop(0)
@@ -42,16 +42,16 @@ def sMA(df,ticker):
         
     fig = make_subplots(rows=1, cols=1)
     
-    fig.add_trace(go.Scatter(x=df.index, y=df['close'],name='close Price'), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df.index, y=df['Close'],name='close Price'), row=1, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['ma_1'], name=f'MA{m1}'), row=1, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['ma_2'], name=f'MA {m2}'), row=1, col=1)
     
     fig.add_trace(go.Scatter(x=df.iloc[Buy].index, 
-                             y=df.iloc[Buy]['close'], name='Buy Signal', mode='markers',
+                             y=df.iloc[Buy]['Close'], name='Buy Signal', mode='markers',
                             marker=dict(color='green', size=8, symbol='triangle-up-dot')))
     
     fig.add_trace(go.Scatter(x=df.iloc[Sell].index, 
-                             y=df.iloc[Sell]['close'], name='Sell Signal', mode='markers',
+                             y=df.iloc[Sell]['Close'], name='Sell Signal', mode='markers',
                             marker=dict(color='red', size=8, symbol='triangle-down-dot')))
     
     fig.update_layout(title=f"{ ticker } stock SMA Crossover strategy",
