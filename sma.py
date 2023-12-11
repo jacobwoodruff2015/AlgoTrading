@@ -7,17 +7,15 @@ import datetime
 import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
-import stockstats
+
 
 def sMA(df,ticker):
     m1 = st.number_input('Enter Moving Average 1:- ',value=50)
     m2 = st.number_input('Enter Moving Average 2:- ',value=200)
-    # df['ma_1'] = df['Close'].rolling(m1).mean()
-    # df['ma_2'] = df['Close'].rolling(m2).mean()
-    stock = stockstats.StockDataFrame.retype(df)
-    # Calculate 13-day and 50-day SMA
-    df["ma_1"] = stock.get(f"close_{m1}_sma")
-    df["ma_2"] = stock.get(f"close_{m2}_sma")
+    
+    df['ma_1'] = df['Close'].rolling(m1).mean()
+    df['ma_2'] = df['Close'].rolling(m2).mean()
+
     df = df.dropna()
     df = df[['close', 'ma_1', 'ma_2']]
     Buy = []
