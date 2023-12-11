@@ -12,14 +12,14 @@ import stockstats
 def sMA(df,ticker):
     m1 = st.number_input('Enter Moving Average 1:- ',value=50)
     m2 = st.number_input('Enter Moving Average 2:- ',value=200)
-    # df['ma_1'] = df['Adj Close'].rolling(m1).mean()
-    # df['ma_2'] = df['Adj Close'].rolling(m2).mean()
+    # df['ma_1'] = df['Close'].rolling(m1).mean()
+    # df['ma_2'] = df['Close'].rolling(m2).mean()
     stock = stockstats.StockDataFrame.retype(df)
     # Calculate 13-day and 50-day SMA
     df["ma_1"] = stock.get(f"close_{m1}_sma")
     df["ma_2"] = stock.get(f"close_{m2}_sma")
     df = df.dropna()
-    df = df[['adj close', 'ma_1', 'ma_2']]
+    df = df[['close', 'ma_1', 'ma_2']]
     Buy = []
     Sell = []
     buyprices = []
@@ -29,11 +29,11 @@ def sMA(df,ticker):
         if df.ma_1.iloc[i] > df.ma_2.iloc[i] \
         and df.ma_1.iloc[i-1] < df.ma_2.iloc[i-1]:
             Buy.append(i)
-            buyprices.append(df.iloc[i]['adj close'])
+            buyprices.append(df.iloc[i]['close'])
         elif df.ma_1.iloc[i] < df.ma_2.iloc[i] \
         and df.ma_1.iloc[i-1] > df.ma_2.iloc[i-1]:
             Sell.append(i)
-            sellprices.append(df.iloc[i]['adj close'])
+            sellprices.append(df.iloc[i]['close'])
     
     if Buy[0] > Sell[0]:
         Sell.pop(0)
@@ -44,21 +44,21 @@ def sMA(df,ticker):
         
     fig = make_subplots(rows=1, cols=1)
     
-    fig.add_trace(go.Scatter(x=df.index, y=df['adj close'],name='adj close Price'), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df.index, y=df['close'],name='close Price'), row=1, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['ma_1'], name=f'MA{m1}'), row=1, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['ma_2'], name=f'MA {m2}'), row=1, col=1)
     
     fig.add_trace(go.Scatter(x=df.iloc[Buy].index, 
-                             y=df.iloc[Buy]['adj close'], name='Buy Signal', mode='markers',
+                             y=df.iloc[Buy]['close'], name='Buy Signal', mode='markers',
                             marker=dict(color='green', size=8, symbol='triangle-up-dot')))
     
     fig.add_trace(go.Scatter(x=df.iloc[Sell].index, 
-                             y=df.iloc[Sell]['adj close'], name='Sell Signal', mode='markers',
+                             y=df.iloc[Sell]['close'], name='Sell Signal', mode='markers',
                             marker=dict(color='red', size=8, symbol='triangle-down-dot')))
     
     fig.update_layout(title=f"{ ticker } stock SMA Crossover strategy",
                   xaxis_title='Timeframe',
-                  yaxis_title='adj close Price')
+                  yaxis_title='close Price')
            
     st.plotly_chart(fig,use_container_width=True)
     
